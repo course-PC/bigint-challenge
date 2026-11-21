@@ -106,10 +106,14 @@ OMP_NUM_THREADS=16 OMP_PLACES=cores OMP_PROC_BIND=spread ./bigint mul 8192 1
 
 ## Evaluation
 
-1. **Correctness**: exact on all hidden inputs (every input kind, odd sizes included). A wrong result anywhere invalidates the level.
-2. **Beat GMP: 2 points guaranteed.** Faster than GMP on *both* levels: geometric mean of your speedups over the addition sizes and inputs > 1, and the same over the multiplication sizes and inputs > 1.
-3. **Beyond that: the intelligence of your parallel implementation.** Clear parallel patterns, used with the right intent and in the right place; no wasted parallelism (threads that cost more than they give); no trivial chokepoints (serial sections, locks or barriers where the work could flow).
-4. **Ideas**: the 3–4 bullets at the top of `my_bigint.c`, which must match your code.
+**Correctness first**: exact on all hidden inputs (every input kind, odd sizes included). A wrong result anywhere invalidates the level.
+
+Then 3 points:
+
+- **Performance, 2 points**, from measurements and profiling:
+  - **beat GMP and both points are guaranteed**: faster than GMP on *both* levels, i.e. geometric mean of your speedups over the addition sizes and inputs > 1, and the same over the multiplication sizes and inputs > 1;
+  - otherwise, judged from the profiles: speedups over GMP, how your code scales from 1 to 16 threads, how close your addition gets to the machine's memory bandwidth.
+- **Code, 1 point**, from reading it: the intelligence of your parallel implementation. Clear parallel patterns, used with the right intent and in the right place; no wasted parallelism (threads that cost more than they give); no trivial chokepoints (serial sections, locks or barriers where the work could flow). Your 3–4 key ideas must match your code.
 
 ## Food for thought
 
@@ -118,6 +122,8 @@ OMP_NUM_THREADS=16 OMP_PLACES=cores OMP_PROC_BIND=spread ./bigint mul 8192 1
 - GMP is serial, but it is very good: for large multiplications it does not use the schoolbook algorithm at all.
 
 ## Submission
+
+Submissions open on **24 November 2026** and close on **8 December 2026, 23:59** (Italian time).
 
 `my_bigint.c` only, with the header filled in:
 
