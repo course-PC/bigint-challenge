@@ -111,7 +111,7 @@ OMP_NUM_THREADS=16 OMP_PLACES=cores OMP_PROC_BIND=spread ./bigint mul 8192 1
 Then 3 points:
 
 - **Performance, 2 points**, from measurements and profiling:
-  - **beat GMP and both points are guaranteed**: faster than GMP on *both* levels, i.e. geometric mean of your speedups over the addition sizes and inputs > 1, and the same over the multiplication sizes and inputs > 1;
+  - **reach the bar and both points are guaranteed**: geometric mean of your speedups over GMP of **at least 1.5×** on the addition (all its sizes and inputs) **and at least 0.5×** on the multiplication (all its sizes and inputs);
   - otherwise, judged from the profiles: speedups over GMP, how your code scales from 1 to 16 threads, how close your addition gets to the machine's memory bandwidth.
 - **Code, 1 point**, from reading it: the intelligence of your parallel implementation. Clear parallel patterns, used with the right intent and in the right place; no wasted parallelism (threads that cost more than they give); no trivial chokepoints (serial sections, locks or barriers where the work could flow). Your 3–4 key ideas must match your code.
 
