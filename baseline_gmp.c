@@ -5,14 +5,14 @@
 
 #include "bigint.h"
 
-// -----------------------------------------------------------------------------
-// GMP baseline (https://gmplib.org): hand-tuned assembly, Karatsuba, Toom-Cook,
-// FFT multiplication; serial.
+// ----------------------------------------------------------------------
+// Baseline: GMP (https://gmplib.org), serial
+//   hand-tuned assembly, Karatsuba, Toom-Cook, FFT multiplication
 //
-// GMP limbs are 64-bit. On a little-endian machine, n 32-bit limbs with n even
-// are exactly n/2 GMP limbs: same bytes, no conversion. Odd n goes through
-// zero-padded copies.
-// -----------------------------------------------------------------------------
+// NOTE: GMP limbs are 64-bit; on a little-endian machine, n 32-bit limbs with n even
+//       are exactly n/2 GMP limbs: same bytes, no conversion; odd n goes through
+//       zero-padded copies
+// ----------------------------------------------------------------------
 
 #if GMP_LIMB_BITS != 64
 #error "64-bit GMP limbs required"

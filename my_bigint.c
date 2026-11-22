@@ -1,4 +1,4 @@
-// =============================================================================
+// ============================================================================
 // Group (one line per member: Surname; Name; Student ID)
 //   Surname; Name; Student ID
 //   Surname; Name; Student ID
@@ -8,13 +8,13 @@
 //   - ...
 //   - ...
 //   - ...
-// =============================================================================
+// ============================================================================
 
 #include <omp.h>
 
 #include "bigint.h"
 
-// -----------------------------------------------------------------------------
+// ============================================================================
 // Level 1: addition
 //
 // Contract:
@@ -22,14 +22,14 @@
 //   - a, b are read-only, c does not overlap a or b, c is NOT zeroed
 //   - n >= 1, any value (not necessarily even or a power of 2)
 //   - the whole call is timed
-// -----------------------------------------------------------------------------
+// ============================================================================
 
 limb_t my_add(const limb_t* a, const limb_t* b, limb_t* c, size_t n) {
     // TODO: replace the reference with your implementation.
     return ref_add(a, b, c, n);
 }
 
-// -----------------------------------------------------------------------------
+// ============================================================================
 // Level 2: multiplication
 //
 // Contract:
@@ -37,7 +37,7 @@ limb_t my_add(const limb_t* a, const limb_t* b, limb_t* c, size_t n) {
 //   - a, b are read-only, c does not overlap a or b, c is NOT zeroed
 //   - n >= 1, any value
 //   - the whole call is timed
-// -----------------------------------------------------------------------------
+// ============================================================================
 
 void my_mul(const limb_t* a, const limb_t* b, limb_t* c, size_t n) {
     // TODO: replace the reference with your implementation.

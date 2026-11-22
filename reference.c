@@ -2,12 +2,12 @@
 
 #include "bigint.h"
 
-// -----------------------------------------------------------------------------
-// Reference implementations: the algorithms from school, one limb at a time.
-// Written to be read and checked against, not to be fast.
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------
+// Reference implementations: the algorithms from school, one limb at a time,
+// written to be read and checked against, not to be fast
+// ----------------------------------------------------------------------
 
-// Addition with a ripple carry: limb i needs the carry out of limb i-1.
+// addition with a ripple carry: limb i needs the carry out of limb i-1
 limb_t ref_add(const limb_t* a, const limb_t* b, limb_t* c, size_t n) {
     uint64_t carry = 0;
     for (size_t i = 0; i < n; ++i) {
@@ -18,8 +18,8 @@ limb_t ref_add(const limb_t* a, const limb_t* b, limb_t* c, size_t n) {
     return (limb_t)carry;
 }
 
-// Schoolbook multiplication: for every limb of a, add a[i] * b, shifted by i limbs,
-// into the result, carrying as you go.
+// schoolbook multiplication: for every limb of a, add a[i] * b, shifted by i limbs,
+// into the result, carrying as you go
 void ref_mul(const limb_t* a, const limb_t* b, limb_t* c, size_t n) {
     memset(c, 0, 2 * n * sizeof(limb_t));
     for (size_t i = 0; i < n; ++i) {

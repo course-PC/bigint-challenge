@@ -6,15 +6,15 @@
 
 #include "bigint.h"
 
-// -----------------------------------------------------------------------------
-// Inputs: deterministic from (seed, index), regenerated at every repeat
+// ----------------------------------------------------------------------
+// Pseudo-random input generation: deterministic from (seed, index)
 //   random  uniform limbs
 //   ones    every limb B-1 (largest values: largest column sums in a product)
 //   ripple  a = B^n - 1, b = 1: one carry crosses the whole number
 //   prop    a[i] + b[i] = B-1 (the limb propagates a carry), except 1 limb in 65536 that
 //           generates a carry (3/4) or kills it (1/4): long carry chains across the number
 //   sparse  99% zero limbs
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------
 
 enum Input { IN_RANDOM, IN_ONES, IN_RIPPLE, IN_PROP, IN_SPARSE };
 static const char* INPUT_NAMES[] = {"random", "ones", "ripple", "prop", "sparse"};
@@ -45,12 +45,12 @@ static void generate(limb_t* a, limb_t* b, size_t n, int input, uint64_t seed) {
     }
 }
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------
 // Checks
 //   exact:  result == GMP result, limb by limb
 //   mod p:  the result is also verified modulo p = 2^61 - 1, independently of GMP
 //   input:  a and b unchanged
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------
 
 #define P61 ((1ULL << 61) - 1)
 
@@ -88,9 +88,9 @@ static uint64_t fingerprint(const limb_t* x, size_t n) {
     return h;
 }
 
-// -----------------------------------------------------------------------------
-// Benchmark: one warm-up repeat + timed repeats, every repeat checked
-// -----------------------------------------------------------------------------
+// ---------
+// Benchmark
+// ---------
 
 enum Op { OP_ADD, OP_MUL };
 
@@ -123,19 +123,20 @@ static Result bench(int op, size_t n, int input, uint64_t seed, int reps, int wi
     double* tr = malloc(reps * sizeof(double));
     Result r = {1, 0, 0, -1};
 
+    // NOTE: the first repeat is a non-timed warm-up; every repeat is checked
     for (int rep = -1; rep < reps; ++rep) {
-        // fresh input, untimed
+        // fresh input at every repeat (untimed): no result can be cached across calls
         generate(a, b, n, input, splitmix64(seed + (uint64_t)(rep + 1)));
         const uint64_t fa = fingerprint(a, n), fb = fingerprint(b, n);
         memset(c, 0xA5, out * sizeof(limb_t));
 
-        // GMP: expected result + baseline time
+        // GMP: expected result and baseline time
         double t0 = omp_get_wtime();
         limb_t ce = op == OP_ADD ? gmp_add(a, b, e, ne) : (gmp_mul(a, b, e, ne), 0);
         const double t_gmp = omp_get_wtime() - t0;
         if (op == OP_ADD && ne != n) ce = e[n]; // odd n: the carry out lands in the pad limb
 
-        // student
+        // timed call
         t0 = omp_get_wtime();
         const limb_t cs = op == OP_ADD ? my_add(a, b, c, n) : (my_mul(a, b, c, n), 0);
         const double t_student = omp_get_wtime() - t0;
@@ -189,9 +190,9 @@ static Result bench(int op, size_t n, int input, uint64_t seed, int reps, int wi
     return r;
 }
 
-// -----------------------------------------------------------------------------
+// ---
 // CLI
-// -----------------------------------------------------------------------------
+// ---
 
 static void usage(const char* prog) {
     fprintf(stderr,
@@ -239,7 +240,7 @@ int main(int argc, char** argv) {
            INPUT_NAMES[input], seed, reps, omp_get_max_threads());
     fflush(stdout);
 
-    // run
+    // run benchmark
     const Result r = bench(op, (size_t)n, input, seed, (int)reps, with_ref);
 
     // report results
