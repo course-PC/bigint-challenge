@@ -77,7 +77,7 @@ You may add any helper functions, static data and temporary buffers inside `my_b
 
 ## Build and run
 
-Requires gcc with OpenMP and GMP. Ubuntu/Debian: `sudo apt install build-essential libgmp-dev`; macOS: `brew install gcc gmp`, then `make CC=gcc-14 GMP_DIR=$(brew --prefix gmp)` (Apple's clang has no OpenMP); Windows: WSL.
+Requires gcc with OpenMP and GMP. Ubuntu/Debian: `sudo apt install build-essential libgmp-dev`; macOS: `brew install gcc gmp`, then `make CC=gcc-NN GMP_DIR=$(brew --prefix gmp)` with the gcc version `brew` installed (Apple's clang has no OpenMP); Windows: WSL.
 
 ```
 make

@@ -7,7 +7,7 @@
 // Big integer limbs
 // -----------------
 
-// type each limb in the big integer:
+// type of each limb in the big integer:
 // a = a[0] + a[1] B + a[2] B^2 + ... + a[n-1] B^(n-1)
 // => limb_t a[n]
 // => base B = 2^32
