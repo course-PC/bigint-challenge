@@ -7,7 +7,11 @@
 // Big integer limbs
 // -----------------
 
-// a = a[0] + a[1] B + a[2] B^2 + ... + a[n-1] B^(n-1), base B = 2^32, least significant first
+// type each limb in the big integer:
+// a = a[0] + a[1] B + a[2] B^2 + ... + a[n-1] B^(n-1)
+// => limb_t a[n]
+// => base B = 2^32
+// => least significant first
 typedef uint32_t limb_t;
 
 // ====================================================

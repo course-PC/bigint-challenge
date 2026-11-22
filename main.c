@@ -110,13 +110,14 @@ static double median(double* t, int k) {
 }
 
 static Result bench(int op, size_t n, int input, uint64_t seed, int reps, int with_ref) {
-    // NOTE: GMP always gets an even length ne (zero pad limb when n is odd), so its timing
-    //       never includes padding copies; the student gets exactly n limbs
+    // NOTE: GMP always gets an even length "ne" (zero pad limb when "n" is odd)
+    //       => its timing never includes padding copies
+    //       => student code gets exactly "n" limbs
     const size_t ne = n + (n & 1);
     const size_t out = op == OP_ADD ? n : 2 * n;
     limb_t* a = calloc(ne, sizeof(limb_t));
     limb_t* b = calloc(ne, sizeof(limb_t));
-    limb_t* c = malloc(out * sizeof(limb_t));                        // student
+    limb_t* c = malloc(out * sizeof(limb_t)); // student
     limb_t* e = malloc((op == OP_ADD ? ne : 2 * ne) * sizeof(limb_t)); // expected (GMP)
     double* tg = malloc(reps * sizeof(double));
     double* ts = malloc(reps * sizeof(double));
@@ -200,7 +201,7 @@ static void usage(const char* prog) {
             "  n      limbs per operand (>= 1)\n"
             "  seed   RNG seed (>= 0)\n"
             "  input  random | ones | ripple | prop | sparse   (default random)\n"
-            "  reps   timed repetitions                         (default 10)\n"
+            "  reps   timed repetitions                        (default 10)\n"
             "env: OMP_NUM_THREADS   threads for your code\n"
             "     BIGINT_REF=1      also time the plain reference (slow for mul)\n", prog);
     exit(EXIT_FAILURE);
@@ -249,7 +250,8 @@ int main(int argc, char** argv) {
         printf("RESULT op=%s n=%llu input=%s threads=%d pass=0\n", argv[1], n, INPUT_NAMES[input], omp_get_max_threads());
         return EXIT_FAILURE;
     }
-    // NOTE: add bandwidth over the minimal traffic: read a, b, write c
+
+    // NOTE: add bandwidth over the minimal traffic -> read a, b, write c
     const double bytes = op == OP_ADD ? 12.0 * n : 0.0;
     if (r.t_ref >= 0) printf("ref     %10.3f ms\n", r.t_ref);
     printf("gmp     %10.3f ms", r.t_gmp);
