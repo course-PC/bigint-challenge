@@ -163,12 +163,16 @@ static Result bench(int op, size_t n, int input, uint64_t seed, int reps, int wi
             if (got != want) fail = "wrong result (mod p check)";
         }
         if (fail) {
-            size_t first = 0;
+            size_t first = 0, wrong = 0;
             while (first < out && c[first] == e[first]) ++first;
-            fprintf(stderr, "FAIL: %s, repeat %d", fail, rep);
-            if (first < out) fprintf(stderr, ", first wrong limb %zu", first);
-            else if (cs != ce) fprintf(stderr, ", carry out %u instead of %u", cs, ce);
-            fprintf(stderr, "\n");
+            for (size_t i = first; i < out; ++i) wrong += c[i] != e[i];
+            fprintf(stderr, "FAIL: %s (%s)\n", fail, rep < 0 ? "warm-up run" : "timed run");
+            if (first < out)
+                fprintf(stderr, "      %zu of %zu limbs wrong, first c[%zu] = 0x%08x, expected 0x%08x%s\n",
+                        wrong, out, first, c[first], e[first],
+                        c[first] == 0xA5A5A5A5u ? "  (0xa5a5a5a5 = never written: c is not zeroed for you)" : "");
+            if (cs != ce)
+                fprintf(stderr, "      carry out %u, expected %u\n", cs, ce);
             r.pass = 0;
             break;
         }
@@ -229,8 +233,11 @@ int main(int argc, char** argv) {
     const char* ref_env = getenv("BIGINT_REF");
     const int with_ref = ref_env && !strcmp(ref_env, "1");
 
-    printf("op      %s  n=%llu limbs (%.1f Mbit)  input=%s  seed=%llu  reps=%llu  threads=%d\n",
-           argv[1], n, n * 32.0 / 1e6, INPUT_NAMES[input], seed, reps, omp_get_max_threads());
+    const double mb = n * 4.0 / 1e6;  // operand size
+    printf("op      %s  n=%llu limbs (%.*f %s per operand)  input=%s  seed=%llu  reps=%llu  threads=%d\n",
+           argv[1], n, mb < 1 ? 1 : 0, mb < 1 ? mb * 1e3 : mb, mb < 1 ? "KB" : "MB",
+           INPUT_NAMES[input], seed, reps, omp_get_max_threads());
+    fflush(stdout);
 
     // run
     const Result r = bench(op, (size_t)n, input, seed, (int)reps, with_ref);

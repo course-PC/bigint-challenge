@@ -2,16 +2,30 @@
 
 Cryptography, computer algebra and record computations of π all rest on arithmetic with *huge* integers: millions of digits. Your job: make the two oldest algorithms you know, **addition** and **multiplication**, run fast on a multicore CPU with OpenMP.
 
-## Problem
+## Getting started
 
-A big integer is an array of $`n`$ **limbs**: 32-bit unsigned digits in base $`B = 2^{32}`$, least significant first:
+One member of the group joins at **https://github.com/course-PC/bigint-challenge-join**: this creates your group's private repository, `bigint-<username of that member>`, and invites the others.
 
-```math
-A = a_0 + a_1 B + a_2 B^2 + \dots + a_{n-1} B^{n-1}, \qquad 0 \le a_i < B .
+```
+git clone https://github.com/course-PC/bigint-<username>
+cd bigint-<username>
+make                                   # needs GMP, see "Build and run"
+./bigint add 10000000 1                # 10 million limbs, seed 1
+./bigint mul 4096 1                    # 4096 limbs
 ```
 
-- **Level 1 – addition.** Given $`A`$ and $`B`$, $`n`$ limbs each, compute the $`n`$ limbs of $`A + B`$ and the carry out (0 or 1).
-- **Level 2 – multiplication.** Given $`A`$ and $`B`$, $`n`$ limbs each, compute the $`2n`$ limbs of $`A \times B`$.
+Then edit `my_bigint.c`, rebuild, run again, push. The starter calls the plain reference, so it is correct (and slow) from the first build.
+
+## Problem
+
+A big integer is an array of $`n`$ **limbs**: 32-bit unsigned digits in base $`B = 2^{32}`$, least significant first. The array `a` holds the number
+
+```math
+a = a_0 + a_1 B + a_2 B^2 + \dots + a_{n-1} B^{n-1}, \qquad 0 \le a_i < B .
+```
+
+- **Level 1 – addition.** Given two numbers `a` and `b`, $`n`$ limbs each, compute the $`n`$ limbs of $`a + b`$ and the carry out (0 or 1).
+- **Level 2 – multiplication.** Given `a` and `b`, $`n`$ limbs each, compute the $`2n`$ limbs of $`a \times b`$.
 
 ### Example with B = 10: addition
 
@@ -65,7 +79,10 @@ void   my_mul(const limb_t* a, const limb_t* b, limb_t* c, size_t n);  // c[0..2
 ```
 
 - `a` and `b` are read-only, `c` never overlaps them;
+- **`c` is not zeroed for you**: it arrives full of garbage (`0xa5a5a5a5`), write every limb;
 - `n` is any value ≥ 1 (not necessarily even, nor a power of 2);
+- the whole call is timed, allocations included;
+- use as many threads as OpenMP gives you (`omp_get_max_threads()`), do not hard-code a number;
 - you may add any helper functions, static data, temporary buffers inside `my_bigint.c`.
 
 ## Rules
@@ -78,18 +95,43 @@ void   my_mul(const limb_t* a, const limb_t* b, limb_t* c, size_t n);  // c[0..2
 
 ## Build and run
 
-GMP is needed (Ubuntu/Debian: `sudo apt install libgmp-dev`).
+You need gcc with OpenMP and GMP:
+
+| system        | setup |
+|---------------|-------|
+| Ubuntu/Debian | `sudo apt install build-essential libgmp-dev`, then `make` |
+| macOS         | Apple's clang has no OpenMP: `brew install gcc gmp`, then `make CC=gcc-14 GMP_DIR=$(brew --prefix gmp)` (use the version `brew` installed) |
+| Windows       | use WSL (Ubuntu), then as Ubuntu |
 
 ```
-make
 ./bigint add|mul n seed [input] [reps]
-./bigint add 100000000 1
+./bigint add 100000000 1                 # 10^8 limbs: needs ~2 GB of RAM
 ./bigint mul 16384 1 ones
 OMP_NUM_THREADS=8 ./bigint mul 16384 1
-BIGINT_REF=1 ./bigint mul 4096 1        # also time the plain reference
+BIGINT_REF=1 ./bigint mul 4096 1         # also time the plain reference (O(n^2): slow above ~16384)
 ```
 
-`input` is one of `random`, `ones`, `ripple`, `prop`, `sparse` (see the top of `main.c`). The program runs GMP and your functions on fresh inputs at every repeat, checks every result exactly, and reports median times, the speedup over GMP and, for the addition, the bandwidth reached. Exit code is nonzero if your result is wrong.
+`input` is one of:
+
+| input    | what it is | what it stresses |
+|----------|------------|------------------|
+| `random` | uniform limbs | the common case |
+| `ones`   | every limb $`B-1`$ | the largest products and sums: overflow |
+| `ripple` | $`a = B^n - 1`$, $`b = 1`$ | one carry that crosses the whole number |
+| `prop`   | $`a_i + b_i = B - 1`$ almost everywhere | long carry chains that cross any chunk boundary |
+| `sparse` | 99% zero limbs | uneven work |
+
+The program runs GMP and your functions on fresh inputs at every repeat, checks every result exactly (against GMP, and modulo a prime), and reports median times, the speedup over GMP and, for the addition, the bandwidth reached. Exit code is nonzero if your result is wrong. For example, the starter (the plain reference) on a laptop:
+
+```
+$ ./bigint mul 4096 1 random 3
+op      mul  n=4096 limbs (16.4 KB per operand)  input=random  seed=1  reps=3  threads=2
+gmp          0.217 ms
+student      9.441 ms  PASS
+speedup 0.023x vs gmp
+```
+
+A wrong result prints what went wrong, e.g. `FAIL: wrong result (differs from GMP)`, how many limbs are wrong and the first one, with its expected value.
 
 ## Benchmarks
 
@@ -103,6 +145,8 @@ Grading runs on an **AMD EPYC 7302** (16 cores) with **16 threads**, one per cor
 ```
 OMP_NUM_THREADS=16 OMP_PLACES=cores OMP_PROC_BIND=spread ./bigint mul 8192 1
 ```
+
+Develop on smaller sizes and fewer threads if your machine is smaller; correctness does not depend on the size.
 
 ## Evaluation
 
@@ -127,9 +171,9 @@ Submissions open on **24 November 2026** and close on **8 December 2026, 23:59**
 
 `my_bigint.c` only, with the header filled in:
 
-- one line per group member, exactly `Surname; Name; Student ID`;
+- one line per group member, exactly `Surname; Name; Student ID` (8-digit ID), e.g. `Rossi; Mario; 12345678`; delete the unused placeholder lines;
 - 3–4 bullets on your main ideas.
 
-Your submission is `my_bigint.c` on the default branch at the deadline; after that the repository becomes read-only.
+Your submission is `my_bigint.c` on the `main` branch at the deadline; after that the repository becomes read-only.
 
 Every push that changes `my_bigint.c` is checked automatically (Actions tab, ✅ / ❌ on the commit; run it by hand with *Run workflow*): header filled in, rules, build, and exact results on small inputs of every kind with 1 and 3 threads. The check machine is small and shared: it measures no speed, benchmark on your own machine.
